@@ -1,4 +1,4 @@
-package com.shang.imagewidget
+package com.shang.imagewidget.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

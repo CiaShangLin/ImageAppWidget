@@ -1,16 +1,16 @@
-package com.shang.imagewidget
+package com.shang.imagewidget.widget
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.RemoteViews
+import com.shang.imagewidget.R
 
 class ImageWidgetProvider : AppWidgetProvider() {
     companion object {
@@ -22,20 +22,21 @@ class ImageWidgetProvider : AppWidgetProvider() {
         super.onReceive(context, intent)
         Log.d("DEBUG", "OnReceive")
 
-        val id = intent?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, -1) ?: -1
-        if (id != -1) {
-            val uri = Uri.parse(intent?.getStringExtra("uri"))
-            val bitmap =  BitmapFactory.decodeStream(context?.contentResolver?.openInputStream(uri))
-            val views = RemoteViews(context?.packageName, R.layout.image_widget)
-            views.setImageViewBitmap(R.id.imageView, bitmap)
-            AppWidgetManager.getInstance(context).updateAppWidget(id, views)
-        } else {
-            val ids = AppWidgetManager.getInstance(context)
-                .getAppWidgetIds(ComponentName(context!!, ImageWidgetProvider::class.java))
-            val views = RemoteViews(context?.packageName, R.layout.image_widget)
-            views.setImageViewResource(R.id.imageView, R.drawable.img_preview)
-            AppWidgetManager.getInstance(context).updateAppWidget(ids, views)
-        }
+//        val id = intent?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, -1) ?: -1
+//        if (id != -1) {
+//            val uri = Uri.parse(intent?.getStringExtra("uri"))
+//            val bitmap =  BitmapFactory.decodeStream(context?.contentResolver?.openInputStream(uri))
+//            val views = RemoteViews(context?.packageName, R.layout.image_widget)
+//            views.setImageViewBitmap(R.id.imageView, bitmap)
+//            AppWidgetManager.getInstance(context).updateAppWidget(id, views)
+//        } else
+//        {
+//            val ids = AppWidgetManager.getInstance(context)
+//                .getAppWidgetIds(ComponentName(context!!, ImageWidgetProvider::class.java))
+//            val views = RemoteViews(context?.packageName, R.layout.image_widget)
+//            views.setImageViewResource(R.id.imageView, R.drawable.img_preview)
+//            AppWidgetManager.getInstance(context).updateAppWidget(ids, views)
+//        }
     }
 
     override fun onUpdate(

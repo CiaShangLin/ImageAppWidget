@@ -2,13 +2,10 @@ package com.shang.imagewidget
 
 import android.Manifest
 import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -17,8 +14,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.get
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.shang.imagewidget.core.MMKVUtil
 import com.shang.imagewidget.databinding.ActivityMainBinding
-import java.nio.ByteBuffer
+import com.shang.imagewidget.ui.GridMode
+import com.shang.imagewidget.ui.ImageAdapter
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class MainActivity : AppCompatActivity() {
@@ -29,9 +29,7 @@ class MainActivity : AppCompatActivity() {
         private val _Permissions = arrayOf<String>(Manifest.permission.READ_EXTERNAL_STORAGE)
     }
 
-    private val _viewModel by lazy {
-        ViewModelProvider(this).get(MainViewModel::class.java)
-    }
+    private val _viewModel by viewModel<MainViewModel>()
     private lateinit var _gridMode: GridMode
     private lateinit var _binding: ActivityMainBinding
     private val _imageAdapter by lazy { ImageAdapter(_viewModel) }
@@ -44,23 +42,19 @@ class MainActivity : AppCompatActivity() {
         initRvImage()
 
 
-        _viewModel.imageEntityLiveData.observe(this){
+        _viewModel.imageEntityLiveData.observe(this) {
             _imageAdapter.submitList(it)
         }
 
-        _viewModel.imageEventLiveData.observe(this){
-            when(it){
+        _viewModel.imageEventLiveData.observe(this) {
+            when (it) {
                 is ImageEvent.PickImage -> {
-                    if(checkPermissions()){
+                    if (checkPermissions()) {
                         pickImage()
                     }
                 }
             }
         }
-
-//        _viewModel.getImageLiveData()?.observe(this){
-//            _imageAdapter.submitList(it)
-//        }
     }
 
     private fun initRvImage() {
@@ -108,10 +102,10 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.toolbar_menu, menu)
 
-        menu?.get(0)?.icon = when (_gridMode) {
+        menu.get(0).icon = when (_gridMode) {
             GridMode.TWO -> ContextCompat.getDrawable(this, R.drawable.icon_two_grid)
             GridMode.THREE -> ContextCompat.getDrawable(this, R.drawable.icon_three_grid)
         }
@@ -185,19 +179,19 @@ class MainActivity : AppCompatActivity() {
                 val id = (_viewModel.imageEventLiveData.value as ImageEvent.PickImage).id
                 val uri = data?.data
                 uri?.let {
-                    updateImageWidget(it,id)
-                    _viewModel.addImage(it,id)
+                    updateImageWidget(it, id)
+                    _viewModel.addImage(it, id)
                     _viewModel.refreshWidget()
                 }
             }
         }
     }
 
-    private fun updateImageWidget(imageUri: Uri,id:Int) {
+    private fun updateImageWidget(imageUri: Uri, id: Int) {
         val intent = Intent()
         intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, id)
-        intent.putExtra("uri",imageUri.toString())
+        intent.putExtra("uri", imageUri.toString())
         sendBroadcast(intent)
     }
 

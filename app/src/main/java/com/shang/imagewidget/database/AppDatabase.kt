@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(entities = [ImageEntity::class], version = 1)
-@TypeConverters(UriTypeConvert::class)
+@TypeConverters(BitmapTypeConvert::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun getImageDao(): ImageDao
 }
