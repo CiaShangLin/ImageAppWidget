@@ -2,11 +2,14 @@ package com.shang.imagewidget
 
 import android.Manifest
 import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.RemoteViews
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -18,6 +21,7 @@ import com.shang.imagewidget.core.MMKVUtil
 import com.shang.imagewidget.databinding.ActivityMainBinding
 import com.shang.imagewidget.ui.GridMode
 import com.shang.imagewidget.ui.ImageAdapter
+import com.shang.imagewidget.widget.ImageWidgetProvider
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
@@ -44,6 +48,9 @@ class MainActivity : AppCompatActivity() {
 
         _viewModel.imageEntityLiveData.observe(this) {
             _imageAdapter.submitList(it)
+            it.forEach {
+                updateImageWidget(it.imageBitmap,it.widgetID)
+            }
         }
 
         _viewModel.imageEventLiveData.observe(this) {
@@ -188,11 +195,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateImageWidget(imageUri: Uri, id: Int) {
-        val intent = Intent()
-        intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, id)
-        intent.putExtra("uri", imageUri.toString())
-        sendBroadcast(intent)
+        val bitmap =  BitmapFactory.decodeStream(contentResolver?.openInputStream(imageUri))
+        val views = RemoteViews(packageName, R.layout.image_widget)
+        views.setImageViewBitmap(R.id.imageView,bitmap)
+        AppWidgetManager.getInstance(this).updateAppWidget(id, views)
+    }
+
+    private fun updateImageWidget(byteArray: ByteArray?,id: Int) {
+        if(byteArray==null){
+            return
+        }
+        val bitmap =  BitmapFactory.decodeByteArray(byteArray,0,byteArray?.size?:0)
+        val views = RemoteViews(packageName, R.layout.image_widget)
+        views.setImageViewBitmap(R.id.imageView,bitmap)
+        AppWidgetManager.getInstance(this).updateAppWidget(id, views)
     }
 
 }

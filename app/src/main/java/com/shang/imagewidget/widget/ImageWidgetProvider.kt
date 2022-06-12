@@ -10,19 +10,38 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.RemoteViews
+import com.shang.imagewidget.DataBase
 import com.shang.imagewidget.R
+import com.shang.imagewidget.database.AppDatabase
+import com.shang.imagewidget.database.ImageEntity
 
 class ImageWidgetProvider : AppWidgetProvider() {
-    companion object {
-        const val URI="URI"
-        const val ID="ID"
+
+    private var data: List<ImageEntity>? = null
+
+    init {
+        data = DataBase.database.getImageDao().getImage()
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
-        Log.d("DEBUG", "OnReceive")
+        Log.d("DEBUG", "onReceive")
 
-//        val id = intent?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, -1) ?: -1
+        AppWidgetManager.getInstance(context)
+                .getAppWidgetIds(ComponentName(context!!, ImageWidgetProvider::class.java)).forEach { id->
+            var bitmap =  data?.find {
+                it.widgetID == id
+            }?.imageBitmap
+            if(bitmap == null){
+                val views = RemoteViews(context.packageName, R.layout.image_widget)
+                views.setImageViewResource(R.id.imageView, R.drawable.img_preview)
+                AppWidgetManager.getInstance(context).updateAppWidget(id, views)
+            }else{
+                val views = RemoteViews(context.packageName, R.layout.image_widget)
+                views.setImageViewBitmap(R.id.imageView,BitmapFactory.decodeByteArray(bitmap,0,bitmap?.size?:0))
+                AppWidgetManager.getInstance(context).updateAppWidget(id, views)
+            }
+        }
 //        if (id != -1) {
 //            val uri = Uri.parse(intent?.getStringExtra("uri"))
 //            val bitmap =  BitmapFactory.decodeStream(context?.contentResolver?.openInputStream(uri))
@@ -45,6 +64,7 @@ class ImageWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
+
         Log.d("DEBUG", "onUpdate")
     }
 

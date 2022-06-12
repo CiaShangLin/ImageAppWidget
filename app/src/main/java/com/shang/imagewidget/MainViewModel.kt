@@ -39,6 +39,7 @@ class MainViewModel(application: Application,private val mainRepository: MainRep
             imageEntityList.add(ImageEntity(bitmap, id))
         }
         _ImageEntityLiveData.value = imageEntityList
+
     }
 
     fun addImage(imageUri: Uri,id:Int){
