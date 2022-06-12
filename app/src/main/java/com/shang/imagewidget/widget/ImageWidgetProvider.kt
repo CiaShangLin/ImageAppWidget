@@ -6,13 +6,11 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.RemoteViews
-import com.shang.imagewidget.DataBase
+import com.shang.imagewidget.KoinInstance
 import com.shang.imagewidget.R
-import com.shang.imagewidget.database.AppDatabase
 import com.shang.imagewidget.database.ImageEntity
 
 class ImageWidgetProvider : AppWidgetProvider() {
@@ -20,7 +18,7 @@ class ImageWidgetProvider : AppWidgetProvider() {
     private var data: List<ImageEntity>? = null
 
     init {
-        data = DataBase.database.getImageDao().getImage()
+        data = KoinInstance.appDatabase.getImageDao().getImage()
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
