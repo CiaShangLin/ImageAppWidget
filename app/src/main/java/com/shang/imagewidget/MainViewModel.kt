@@ -3,8 +3,10 @@ package com.shang.imagewidget
 import android.app.Application
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,7 +17,9 @@ import com.shang.imagewidget.widget.ImageWidgetProvider
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
-class MainViewModel(application: Application,private val mainRepository: MainRepository) : AndroidViewModel(application),
+
+class MainViewModel(application: Application, private val mainRepository: MainRepository) :
+    AndroidViewModel(application),
     ImagePickViewHolder.Listener {
 
     private val _ImageEventLiveData = MutableLiveData<ImageEvent>()
@@ -42,25 +46,42 @@ class MainViewModel(application: Application,private val mainRepository: MainRep
 
     }
 
-    fun addImage(imageUri: Uri,id:Int){
-        getApplication<MyApplication>().contentResolver.openInputStream(imageUri)?.let {
-            val imageEntity = ImageEntity(getBytes(it),id)
+    fun addImage(imageUri: Uri, id: Int) {
+        val w = getApplication<MyApplication>().resources.displayMetrics.widthPixels / 2
+        compressBitmap(getApplication(), imageUri, w, w)?.let {
+            val stream = ByteArrayOutputStream()
+            it.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            val byteArray = stream.toByteArray()
+            val imageEntity = ImageEntity(byteArray, id)
             mainRepository.addImage(imageEntity)
-        }
+        }?:Log.w("DEBUG","addImage bitmap is null")
     }
 
     override fun imagePickClick(id: Int) {
         _ImageEventLiveData.value = ImageEvent.PickImage(id)
     }
 
-    fun getBytes(inputStream: InputStream): ByteArray? {
-        val byteBuffer = ByteArrayOutputStream()
-        val bufferSize = 1024
-        val buffer = ByteArray(bufferSize)
-        var len = 0
-        while (inputStream.read(buffer).also { len = it } != -1) {
-            byteBuffer.write(buffer, 0, len)
+    private fun calculateInSampleSize(
+        options: BitmapFactory.Options,
+        reqWidth: Int,
+        reqHeight: Int
+    ): Int {
+        // Raw height and width of image
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
         }
-        return byteBuffer.toByteArray()
+
+        return inSampleSize
     }
 }

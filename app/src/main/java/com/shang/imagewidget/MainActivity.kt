@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         _viewModel.imageEntityLiveData.observe(this) {
             _imageAdapter.submitList(it)
             it.forEach {
-                updateImageWidget(it.imageBitmap,it.widgetID)
+                updateImageWidget(it.imageBitmap, it.widgetID)
             }
         }
 
@@ -195,20 +195,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateImageWidget(imageUri: Uri, id: Int) {
-        val bitmap =  BitmapFactory.decodeStream(contentResolver?.openInputStream(imageUri))
+        //這裡好像應該要拿widget的大小才比較合理
+        val w = resources.displayMetrics.widthPixels / 2
+        val bitmap = compressBitmap(this, imageUri, w, w)
         val views = RemoteViews(packageName, R.layout.image_widget)
-        views.setImageViewBitmap(R.id.imageView,bitmap)
+        views.setImageViewBitmap(R.id.imageView, bitmap)
         AppWidgetManager.getInstance(this).updateAppWidget(id, views)
     }
 
-    private fun updateImageWidget(byteArray: ByteArray?,id: Int) {
-        if(byteArray==null){
+    private fun updateImageWidget(byteArray: ByteArray?, id: Int) {
+        if (byteArray == null) {
             return
         }
-        val bitmap =  BitmapFactory.decodeByteArray(byteArray,0,byteArray?.size?:0)
+        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray?.size ?: 0)
         val views = RemoteViews(packageName, R.layout.image_widget)
-        views.setImageViewBitmap(R.id.imageView,bitmap)
+        views.setImageViewBitmap(R.id.imageView, bitmap)
         AppWidgetManager.getInstance(this).updateAppWidget(id, views)
     }
-
 }
